@@ -1,0 +1,30 @@
+# AWS EC2 override file — use on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
+#
+# Changes from the base file:
+#  1. All services restart automatically if the EC2 reboots.
+#  2. Backend port 8000 NOT exposed publicly — only nginx (port 80) faces the internet.
+#  3. Memory limits sized for a t2.micro (1 GB RAM total).
+
+services:
+  db:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  backend:
+    restart: unless-stopped
+    ports: []            # remove the 8000:8000 mapping — nginx handles routing
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  frontend:
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64m

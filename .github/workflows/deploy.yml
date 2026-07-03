@@ -1,0 +1,41 @@
+name: Deploy to AWS EC2
+
+# Triggers only when you push to main/master — not on every commit.
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:   # also allows manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: SSH deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Copy the project files to EC2 via rsync over SSH.
+      - name: Sync files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ".,!.git,!node_modules,!backend/.venv,!frontend/dist"
+          target: "~/app"
+
+      # SSH in and run docker compose (rebuild only changed layers — fast).
+      - name: Build and restart containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/app
+            docker compose -f docker-compose.yml -f docker-compose.aws.yml \
+              up -d --build --remove-orphans
+            # Remove old unused images to save disk space
+            docker image prune -f
+            echo "Deploy complete. App running at http://${{ secrets.EC2_HOST }}"

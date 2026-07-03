@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: talenttrail
+      POSTGRES_PASSWORD: talenttrail
+      POSTGRES_DB: talenttrail
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talenttrail -d talenttrail"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override DB to point at the postgres service inside the Docker network.
+      DATABASE_URL: postgresql+psycopg2://talenttrail:talenttrail@db:5432/talenttrail
+      # Frontend nginx proxies /api → backend, so only the nginx container
+      # origin needs to be in CORS origins.
+      BACKEND_CORS_ORIGINS: '["http://localhost","http://localhost:80","http://frontend"]'
+    ports:
+      - "8000:8000"   # expose for local dev; remove in production
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - chroma:/app/.chroma
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # /api/v1 is relative — nginx inside this container proxies to backend.
+        VITE_API_BASE_URL: /api/v1
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  chroma:

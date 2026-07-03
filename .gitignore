@@ -1,0 +1,34 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- Env / secrets ----
+.env
+backend/.env
+*.local
+
+# ---- App data ----
+*.db
+backend/talenttrail.db
+backend/test_talenttrail.db
+backend/uploads/
+backend/.chroma/
+.chroma/
+
+# ---- Node / frontend ----
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ---- Editor / OS ----
+.DS_Store
+.idea/
+.vscode/
+*.log
