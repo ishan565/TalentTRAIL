@@ -26,6 +26,7 @@ backend/.chroma/
 node_modules/
 frontend/dist/
 frontend/.vite/
+*.tsbuildinfo
 
 # ---- Editor / OS ----
 .DS_Store
