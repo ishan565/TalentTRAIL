@@ -90,6 +90,20 @@ class Settings(BaseSettings):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def _coerce_debug(cls, v):
+        # Some shells/tooling export DEBUG values like "release" or "development".
+        # Treat truthy/falsey strings normally and map known non-boolean modes
+        # to a sensible default so local startup doesn't fail unexpectedly.
+        if isinstance(v, str):
+            lowered = v.strip().lower()
+            if lowered in {"1", "true", "yes", "on", "debug", "development", "dev"}:
+                return True
+            if lowered in {"0", "false", "no", "off", "release", "production", "prod"}:
+                return False
+        return v
+
     @property
     def is_azure(self) -> bool:
         return self.LLM_PROVIDER == "azure"

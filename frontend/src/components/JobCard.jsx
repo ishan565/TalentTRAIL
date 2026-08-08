@@ -51,7 +51,9 @@ export default function JobCard({ ranked, onSelect, onSave }) {
               stroke="currentColor"
             />
           </svg>
-          <span className="absolute text-sm font-bold text-slate-700 dark:text-slate-200">{pct}%</span>
+          <span className="absolute text-center text-[11px] font-bold leading-tight text-slate-700 dark:text-slate-200">
+            {pct}% match
+          </span>
         </div>
       </div>
 
