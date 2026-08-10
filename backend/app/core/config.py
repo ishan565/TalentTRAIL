@@ -7,7 +7,8 @@ one place. Import the singleton ``settings`` everywhere instead of reading
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List, Literal
+import json
+from typing import List, Literal, Union
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,7 +24,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["development", "production"] = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173"]
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:5173"]
 
     # ---- Security ----
     SECRET_KEY: str = "change-me"
@@ -85,8 +86,16 @@ class Settings(BaseSettings):
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def _split_cors(cls, v):
-        # Allow both JSON list and comma-separated string in the env file.
-        if isinstance(v, str) and not v.startswith("["):
+        # Accept JSON list string, comma-separated string, or plain string.
+        # pydantic-settings v2 passes raw strings for Union types without
+        # attempting json.loads first, so we handle all formats here.
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("["):
+                try:
+                    return json.loads(v)
+                except (json.JSONDecodeError, ValueError):
+                    pass
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 

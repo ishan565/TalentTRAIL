@@ -12,7 +12,7 @@ services:
       - key: API_V1_PREFIX
         value: /api/v1
       - key: BACKEND_CORS_ORIGINS
-        value: '["*"]'
+        value: "*"
       - key: SECRET_KEY
         generateValue: true
       - key: LLM_PROVIDER
