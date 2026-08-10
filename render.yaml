@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: talenttrail-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: APP_NAME
+        value: TalentTrail
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: BACKEND_CORS_ORIGINS
+        value: "*"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LLM_PROVIDER
+        value: azure
+      - key: AZURE_OPENAI_API_KEY
+        sync: false
+      - key: AZURE_OPENAI_ENDPOINT
+        sync: false
+      - key: AZURE_OPENAI_DEPLOYMENT
+        value: gpt-4o-mini
